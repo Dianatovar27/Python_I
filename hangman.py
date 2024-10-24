@@ -2,9 +2,9 @@ print('lets play the hangman! give me a word', end = ' ')
 
 word= input() 
 
-def word_count_dict(s):
+def word_count_dict(word):
     char_count = {}
-    for char in s:
+    for char in word:
         if char in char_count:
             char_count[char] += 1
         else:
@@ -37,7 +37,6 @@ while not win and chances>0:
         position = ''
         for p in positions_list:
             position = position + '#' + str(p) + ', '
-        print('p es: ' +str(position))
         print('Yes, ' + letter + ' is part of the word and its in the ' + str(position) + ' position')
         del word_dict[letter]
     if letter not in word_dict:
