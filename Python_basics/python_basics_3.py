@@ -2,23 +2,19 @@ import random2
 import openpyxl
 import matplotlib.pyplot as graph
 
-# Utilizando el modulo anterior obtén 30 notas aleatorias y guardaras en Excel
+random_list=[]
 
-#random_list=[]
-
-#for n in range(30):
+for n in range(30):
     #random_list.append(random2.givemenumber(1,10))
-#print(random_list)
+print(random_list)
 
 excel = openpyxl.load_workbook('C:\\Users\\jfdr1\\Desktop\\Python_I\\Python_basics\\random_numbers.xlsx')
 
 sheet = excel['numbers']
 
-#sheet.append(random_list)
+sheet.append(random_list)
 
-#excel.save('C:\\Users\\jfdr1\\Desktop\\Python_I\\Python_basics\\random_numbers.xlsx')
-
-# Crea un grafico que muestre si hay mas aprobados o suspensos
+excel.save('C:\\Users\\jfdr1\\Desktop\\Python_I\\Python_basics\\random_numbers.xlsx')
 
 grade_card= sheet['A1':'AD1']
 
