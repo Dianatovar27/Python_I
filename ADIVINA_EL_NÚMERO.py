@@ -1,12 +1,26 @@
-import random2
+import lib_adivina
 import openpyxl
 import getpass
 
-excel_document= openpyxl.load_workbook("C:\\Users\\jfdr1\\Desktop\\Python_I\\Estadisticas.xlsx")
-hojaSolitario = excel_document["Solitario"]
-hoja2Jugadores = excel_document["2Jugadores"]
+lib_adivina.welcome()
+print('Hola! Bienvenido a Adivina el Numero. Antes de comenzar a jugar hagamos un pequeno set up:')
+
+ubicacion_archivo = input(f'Porfavor Ingresa la ruta donde quieres guardar Estadisticas.xlsx (ej., C:\\Users\\TuUsuario\\Desktop\\):  ')
+excelDocument = openpyxl.Workbook()
+
+hojaSolitario = excelDocument.active
+hojaSolitario.title = "Solitario"
+hojaSolitario.append(["Nombre", "Nivel", "Ganadas"])
+
+hoja2Jugadores = excelDocument.create_sheet(title="2Jugadores")
+
+hoja2Jugadores.append(["Nombre", "Nivel", "Ganadas"])
+
+excelDocument.save(f"{ubicacion_archivo}\\Estadisticas.xlsx")
+print("⭐️⭐️⭐️¡Archivo guardado exitosamente!⭐️⭐️⭐️")
 
 def menu():
+    lib_adivina.Menu()
     print("Selecciona una opcion: ")
     print("1. Partida modo solitario")
     print("2. Partida 2 Jugadores")
@@ -22,6 +36,7 @@ def valida(min, max):
     return opcion
 
 def menu2():
+    lib_adivina.nivel()
     print("Selecciona un nivel: ")
     print("1. Fácil (20 intentos)")
     print("2. Medio (12 intentos)")
@@ -29,10 +44,18 @@ def menu2():
     print("4. Crea tu propio nivel")
     print("5. Regresar al menu principal")
 
-def dificultadSolitario (chances, min, max):
+def jugarSolitario (chances, min, max):
+    if chances == 20 and min == 1 and max == 1000:
+        nivel= "Fácil"
+    elif chances == 12 and min == 1 and max == 1000:
+        nivel= "Medio"
+    elif chances == 5 and min == 1 and max == 1000:
+        nivel= "Difícil"
+    else:
+        nivel = "Propio"
     win=False
     numIntentado = []
-    soliNumRandom=random2.giveMeNumber(min,max)
+    soliNumRandom=lib_adivina.giveMeNumber(min,max)
     print(f'Adivina un numero del {min} al {max}')
     while not win and chances>0:
         if len(numIntentado) == 0:
@@ -50,31 +73,20 @@ def dificultadSolitario (chances, min, max):
             else:
                  print("El numero a adivinar es mayor al intrucido")
     if win:
-        print(r"""
-🎉 GANADOR 🎉
-  __     ______  _    _  __          _______ _   _ 
-  \ \   / / __ \| |  | | \ \        / /_   _| \ | |
-   \ \_/ / |  | | |  | |  \ \  /\  / /  | | |  \| |
-    \   /| |  | | |  | |   \ \/  \/ /   | | | . ` |
-     | | | |__| | |__| |    \  /\  /   _| |_| |\  |
-     |_|  \____/ \____/      \/  \/   |_____|_| \_|
-""")
+        lib_adivina.win()
         name= input("Escribe tu nombre porfavor: ")
-        hojaSolitario.append([name, 1])
-        excel_document.save("C:\\Users\\jfdr1\\Desktop\\Python_I\\Estadisticas.xlsx")
+        hojaSolitario.append([name, nivel, 1])
+      
     else:
-        print("""
-╔═══╗ ♪
-║███║ ♪
-║ (╯︵╰) Has perdido! Fin del juego...
-╚═══╝
-""")
+        lib_adivina.lose()
         print("El numero era: " + str(soliNumRandom))
         name= input("Escribe tu nombre porfavor: ")
-        hojaSolitario.append([name, None, None])
-        excel_document.save("C:\\Users\\jfdr1\\Desktop\\Python_I\\Estadisticas.xlsx")
+        hojaSolitario.append([name, nivel, None])
+    
+    excelDocument.save(f"{ubicacion_archivo}\\Estadisticas.xlsx")
+      
 
-def dificultadPropioNivelSolitario():
+def jugarSolitarioPropioNivel():
     chances= int(input("Elije el numero de intentos: "))
     print("Ahora escoge el rango")
     min = int(input("Elije el numero menor: "))
@@ -84,115 +96,63 @@ def dificultadPropioNivelSolitario():
         min = int(input("Elije el numero menor: "))
         max = int(input("Elije el numero mayor: "))
 
-    dificultadSolitario (chances,min,max)
+    jugarSolitario (chances,min,max)
 
-def dificultad2Jugadores (chances):
-    win=False 
-    num2JugadoresIntentado= []
+def jugar2Jugadores(chances, min, max, chancesPropio=False):
+    if chancesPropio:
+        chances = int(input("Primero escribe el número de intentos para jugador 2: "))
+        min = int(input("Elije el número menor: "))
+        max = int(input("Elije el número mayor: "))
+        while min > max:
+            print("Error, el número menor no puede ser mayor al mayor")
+            min = int(input("Elije el número menor: "))
+            max = int(input("Elije el número mayor: "))
 
-    print("Bienvenidos a la partida para 2 jugadores.\nJugador numero 1 escribira un número entre el 1 y el 1000, jugador numero dos intentara adivinarlo")
-    NumJugador1 = int(getpass.getpass("Jugador número 1, introduce el número a adivinar (no te preocupes, el numero no se mostrara en pantalla): "))
+    if chances == 20 and min == 1 and max == 1000:
+        nivel= "Fácil"
+    elif chances == 12 and min == 1 and max == 1000:
+        nivel= "Medio"
+    elif chances == 5 and min == 1 and max == 1000:
+        nivel= "Difícil"
+    else:
+        nivel = "Propio"
+    win = False
+    numIntentado = []
+    print(f"Bienvenidos a la partida para 2 jugadores.\nJugador número 1 escribirá un número entre {min} y {max}, jugador número 2 intentará adivinarlo.")
+    NumJugador1 = int(getpass.getpass("Jugador número 1, introduce el número a adivinar (no se mostrará en pantalla): "))
 
-    while NumJugador1 < 1 or NumJugador1 > 1000:
-        NumJugador1 = int(getpass.getpass("Error, escribe un numero entre 1 y 1000: "))
+    while NumJugador1 < min or NumJugador1 > max:
+        NumJugador1 = int(getpass.getpass("Error, escribe un número dentro del rango seleccionado: "))
 
     while not win and chances>0:
-        if len(num2JugadoresIntentado) == 0:
+        if len(numIntentado) == 0:
             print("Jugador 2 escribe tu primer numero: ")
         else:
-            print("Estos son los numeros que has intrucido hasta el momento: " + str(num2JugadoresIntentado))
+            print("Estos son los numeros que has intrucido hasta el momento: " + str(numIntentado))
         NumJugador2 = int(input())  
         if NumJugador2 == NumJugador1:
             win=True
         if NumJugador2 != NumJugador1:
             chances = chances-1
-            num2JugadoresIntentado.append(NumJugador2)
+            numIntentado.append(NumJugador2)
             if NumJugador2 > NumJugador1:
                 print("El numero a adivinar es menor al intrucido")
             else:
                  print("El numero a adivinar es mayor al intrucido")
     if win:
-        print(r"""
-🎉 GANADOR 🎉
-  __     ______  _    _  __          _______ _   _ 
-  \ \   / / __ \| |  | | \ \        / /_   _| \ | |
-   \ \_/ / |  | | |  | |  \ \  /\  / /  | | |  \| |
-    \   /| |  | | |  | |   \ \/  \/ /   | | | . ` |
-     | | | |__| | |__| |    \  /\  /   _| |_| |\  |
-     |_|  \____/ \____/      \/  \/   |_____|_| \_|
-""")
+        lib_adivina.win()
         name= input("Jugador 2 Escribe tu nombre porfavor: ")
-        hoja2Jugadores.append([name, 1])
-        excel_document.save("C:\\Users\\jfdr1\\Desktop\\Python_I\\Estadisticas.xlsx")
+        hoja2Jugadores.append([name, nivel, 1])
+
     else:
-        print("""
-╔═══╗ ♪
-║███║ ♪
-║ (╯︵╰) Has perdido! Fin del juego...
-╚═══╝
-""")
+        lib_adivina.lose()
         print("El numero era: " + str(NumJugador1))
         name= input("Jugador 2 Escribe tu nombre porfavor: ")
-        hoja2Jugadores.append([name, None, 1])
-        excel_document.save("C:\\Users\\jfdr1\\Desktop\\Python_I\\Estadisticas.xlsx")
+        hoja2Jugadores.append([name, nivel, None])
 
-def dificultadPropio2jugadores():
-    print("Bienvenidos a la partida para 2 jugadores.\nJugador numero 1 escribira un número y el jugador numero 2 intentara adivinarlo")
-    chancesPropio2= int(input("Primero escribe el numero de intentos que tiene jugador 2 para adivinar: "))
-    win=False
-    numIntentadoPropio2 = []
-    print("Ahora escoge el rango")
-    minPropio2 = int(input("Elije el numero menor: "))
-    maxPropio2 = int(input("Elije el numero mayor: "))
-    while minPropio2 > maxPropio2:
-        print("Error el numero menor no puede ser mas grande que el mayor")
-        minPropio2 = int(input("Elije el numero menor: "))
-        maxPropio2 = int(input("Elije el numero mayor: "))
+    excelDocument.save(f"{ubicacion_archivo}\\Estadisticas.xlsx")
 
-    PropioNumJugador1 = int(getpass.getpass("Jugador número 1, introduce el número a adivinar (no te preocupes, el numero no se mostrara en pantalla): "))
 
-    while PropioNumJugador1 < minPropio2 or PropioNumJugador1 > maxPropio2:
-        PropioNumJugador1 = int(getpass.getpass("Error, escribe un numero dentro el rago seleccionado anteriorment: "))
-
-    while not win and chancesPropio2>0:
-        if len(numIntentadoPropio2) == 0:
-            print("Jugador 2 escribe tu primer numero: ")
-        else:
-            print("Estos son los numeros que has intrucido hasta el momento: " + str(numIntentadoPropio2))
-        PropioNumJugador2 = int(input())  
-        if PropioNumJugador2 == PropioNumJugador1:
-            win=True
-        if PropioNumJugador2 != PropioNumJugador1:
-            chancesPropio2 = chancesPropio2-1
-            numIntentadoPropio2.append(PropioNumJugador2)
-            if PropioNumJugador2 > PropioNumJugador1:
-                print("El numero a adivinar es menor al intrucido")
-            else:
-                 print("El numero a adivinar es mayor al intrucido")
-    if win:
-        print(r"""
-🎉 GANADOR 🎉
-  __     ______  _    _  __          _______ _   _ 
-  \ \   / / __ \| |  | | \ \        / /_   _| \ | |
-   \ \_/ / |  | | |  | |  \ \  /\  / /  | | |  \| |
-    \   /| |  | | |  | |   \ \/  \/ /   | | | . ` |
-     | | | |__| | |__| |    \  /\  /   _| |_| |\  |
-     |_|  \____/ \____/      \/  \/   |_____|_| \_|
-""")
-        name= input("Jugador 2 Escribe tu nombre porfavor: ")
-        hoja2Jugadores.append([name, 1])
-        excel_document.save("C:\\Users\\jfdr1\\Desktop\\Python_I\\Estadisticas.xlsx")
-    else:
-        print("""
-╔═══╗ ♪
-║███║ ♪
-║ (╯︵╰) Has perdido! Fin del juego...
-╚═══╝
-""")
-        print("El numero era: " + str(PropioNumJugador1))
-        name= input("Jugador 2 Escribe tu nombre porfavor: ")
-        hoja2Jugadores.append([name, None, 1])
-        excel_document.save("C:\\Users\\jfdr1\\Desktop\\Python_I\\Estadisticas.xlsx")
 
 while True:
     opcionMenu1 = 0
@@ -206,25 +166,31 @@ while True:
         menu2()
         opcionMenu2 = valida(1, 5)
         if opcionMenu2 == 1:
-            dificultadSolitario (20,1,1000)
+            jugarSolitario (20,1,1000)
         if opcionMenu2 == 2:
-            dificultadSolitario (12,1,1000)
+            jugarSolitario (12,1,1000)
         if opcionMenu2 == 3:
-            dificultadSolitario (5,1,1000)
+            jugarSolitario (5,1,1000)
         if opcionMenu2 == 4:
-            dificultadPropioNivelSolitario()
+            jugarSolitarioPropioNivel()
         
     if opcionMenu1 == 2:
         menu2()
         opcionMenu2 = valida(1,5)
         if opcionMenu2 == 1:
-            dificultad2Jugadores (20)
+            jugar2Jugadores (20,1,1000)
         if opcionMenu2 == 2:
-            dificultad2Jugadores (12)
+            jugar2Jugadores (12,1,1000)
         if opcionMenu2 == 3:
-            dificultad2Jugadores (4)
+            jugar2Jugadores (5,1,1000)
         if opcionMenu2 == 4:
-            dificultadPropio2jugadores()
+            jugar2Jugadores(0, min, max, chancesPropio=True)
+
+    if opcionMenu1 == 3:
+        lib_adivina.estadistica()
+        
+
+            
 
 
 
