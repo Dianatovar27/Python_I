@@ -7,7 +7,7 @@ from openpyxl import load_workbook
 import matplotlib.pyplot as plt
 
 lib_adivina.welcome()
-print('Hola! Bienvenido a Adivina el Numero. Antes de comenzar a jugar hagamos un pequeno set up.')
+print('Hola! Bienvenido a Adivina el Numero. Antes de comenzar a jugar hagamos un pequeño set up.')
 print('Elige dónde guardar y nombra el archivo: Estadisticas.xlsx, este archivo guardará los resultados del juego.\nSi el archivo ya existe, haz clic en él y selecciona si para reemplazar')
 
 root = tk.Tk()
@@ -47,13 +47,25 @@ def menu():
     print("3. Estadística")
     print("4. Salir")
 
+def validaInt(mensaje=''):
+    while True:
+        try:
+            opcion = int(input(mensaje))
+            return opcion
+        except ValueError:
+            print("Error, ingresa un número válido.")
+
 def valida(min, max):
     if min > max:
         print("Error, min no puede ser mas grande que max")
-    opcion = int(input())
-    while opcion < min or opcion > max:
-        opcion = int(input(f'Error, escribe una opción entre {min} y {max}: '))
-    return opcion
+        return None
+
+    while True:
+        opcion = validaInt()
+        if min <= opcion <= max:
+            return opcion
+        else:
+            print(f'Error, escribe una opción entre {min} y {max}: ')
 
 def menu2():
     lib_adivina.nivel()
@@ -82,7 +94,7 @@ def jugarSolitario (chances, min, max):
             print("Escribe tu primer numero")
         else:
             print("Estos son los numeros que has intrucido hasta el momento: " + str(numIntentado))
-        adivinaSoliNum = int(input())  
+        adivinaSoliNum = validaInt()
         if adivinaSoliNum == soliNumRandom:
             win=True
         if adivinaSoliNum != soliNumRandom:
@@ -95,8 +107,7 @@ def jugarSolitario (chances, min, max):
     if win:
         lib_adivina.win()
         name= input("Escribe tu nombre porfavor: ")
-        hojaSolitario.append([name, nivel, 1])
-      
+        hojaSolitario.append([name, nivel, 1]) 
     else:
         lib_adivina.lose()
         print("El numero era: " + str(soliNumRandom))
@@ -104,28 +115,27 @@ def jugarSolitario (chances, min, max):
         hojaSolitario.append([name, nivel, 0])
     excelDocument.save(ubicacion_archivo)
       
-
 def jugarSolitarioPersonalizadoNivel():
-    chances= int(input("Elije el numero de intentos: "))
+    chances= validaInt("Elije el numero de intentos: ")
     print("Ahora escoge el rango")
-    min = int(input("Elije el numero menor: "))
-    max = int(input("Elije el numero mayor: "))
+    min = validaInt("Elije el numero menor: ")
+    max = validaInt("Elije el numero mayor: ")
     while min > max:
         print("Error el numero menor no puede ser mas grande que el mayor")
-        min = int(input("Elije el numero menor: "))
-        max = int(input("Elije el numero mayor: "))
+        min = validaInt("Elije el numero menor: ")
+        max = validaInt("Elije el numero mayor: ")
 
     jugarSolitario (chances,min,max)
 
 def jugar2Jugadores(chances, min, max, chancesPersonalizado=False):
     if chancesPersonalizado:
-        chances = int(input("Primero escribe el número de intentos para jugador 2: "))
-        min = int(input("Elije el número menor: "))
-        max = int(input("Elije el número mayor: "))
+        chances = validaInt("Primero escribe el número de intentos para jugador 2: ")
+        min = validaInt("Elije el número menor: ")
+        max = validaInt("Elije el número mayor: ")
         while min > max:
             print("Error, el número menor no puede ser mayor al mayor")
-            min = int(input("Elije el número menor: "))
-            max = int(input("Elije el número mayor: "))
+            min = validaInt("Elije el número menor: ")
+            max = validaInt("Elije el número mayor: ")
 
     if chances == 20 and min == 1 and max == 1000:
         nivel= "facil"
@@ -148,7 +158,7 @@ def jugar2Jugadores(chances, min, max, chancesPersonalizado=False):
             print("Jugador 2 escribe tu primer numero: ")
         else:
             print("Estos son los numeros que has intrucido hasta el momento: " + str(numIntentado))
-        NumJugador2 = int(input())  
+        NumJugador2 = validaInt()  
         if NumJugador2 == NumJugador1:
             win=True
         if NumJugador2 != NumJugador1:
@@ -162,7 +172,6 @@ def jugar2Jugadores(chances, min, max, chancesPersonalizado=False):
         lib_adivina.win()
         name= input("Jugador 2 Escribe tu nombre porfavor: ")
         hoja2Jugadores.append([name, nivel, 1])
-
     else:
         lib_adivina.lose()
         print("El numero era: " + str(NumJugador1))
@@ -183,7 +192,6 @@ def menuEstadistica():
 def nombreEstandar(nombre):
     return ' '.join(nombre.split()).lower() if isinstance(nombre, str) else nombre
 
-
 def ganadasPorUsuario(hoja, usuario):
     total_ganadas = 0  
     usuario = nombreEstandar(usuario)
@@ -191,8 +199,16 @@ def ganadasPorUsuario(hoja, usuario):
         nombre, nivel, ganadas = row
         if nombreEstandar(nombre) == usuario:
             total_ganadas += ganadas  
-    
     return total_ganadas
+
+def perdidasPorUsuario(hoja, usuario):
+    total_perdidas = 0  
+    usuario = nombreEstandar(usuario)
+    for row in hoja.iter_rows(min_row=2, values_only=True):
+        nombre, nivel, ganadas = row
+        if nombreEstandar(nombre) == usuario and ganadas == 0:
+            total_perdidas += 1
+    return total_perdidas
 
 while True:
     opcionMenu1 = 0
@@ -231,30 +247,43 @@ while True:
         opcionEstadistica = valida(1,6)
 
         if opcionEstadistica == 1:
-            usuario = input('Escribe el nombre del usuario que deseas buscar: ')
-            usuario= nombreEstandar(usuario)
+                    usuario = input('Escribe el nombre del usuario que deseas buscar: ')
+                    usuario= nombreEstandar(usuario)
 
-            for row in hojaSolitario.iter_rows(min_row=2, min_col=1, max_col=1):
-                cell = row[0]
-                cell.value = nombreEstandar(cell.value)
-                excelDocument.save(ubicacion_archivo)
+                    for row in hojaSolitario.iter_rows(min_row=2, min_col=1, max_col=1):
+                        cell = row[0]
+                        cell.value = nombreEstandar(cell.value)
+                        excelDocument.save(ubicacion_archivo)
+                        
+                    for row in hoja2Jugadores.iter_rows(min_row=2, min_col=1, max_col=1): 
+                        cell = row[0]
+                        cell.value = nombreEstandar(cell.value)
+                        excelDocument.save(ubicacion_archivo)
+
+                    usuarioGanadasSolitario = 0
+                    usuarioGanadas2Jugadores = 0
+                    usuarioPerdidasSolitario = 0
+                    usuarioPerdidas2Jugadores = 0
+                    usuarioGanadasSolitario = ganadasPorUsuario(hojaSolitario, usuario)
+                    usuarioGanadas2Jugadores = ganadasPorUsuario(hoja2Jugadores, usuario)
+                    usuarioPerdidasSolitario = perdidasPorUsuario(hojaSolitario, usuario)
+                    usuarioPerdidas2Jugadores = perdidasPorUsuario(hoja2Jugadores, usuario)
                 
-            for row in hoja2Jugadores.iter_rows(min_row=2, min_col=1, max_col=1): 
-                cell = row[0]
-                cell.value = nombreEstandar(cell.value)
-                excelDocument.save(ubicacion_archivo)
+                    labels = ['Ganadas', 'Perdidas']
+                    usuarioSolitarioData = [usuarioGanadasSolitario, usuarioPerdidasSolitario]
+                    usuario2JugadoresData = [usuarioGanadas2Jugadores, usuarioPerdidas2Jugadores]
+                    plt.figure(figsize=(15, 5))
+                    plt.subplot(1, 2, 1)
+                    plt.bar(labels, usuarioSolitarioData, color=['green', 'red'])
+                    plt.title(' Partidas jugadas en Solitario')
+                    plt.ylabel(f'Ganadas y perdidas de {usuario}')
 
-            usuarioGanadasSolitario = 0
-            usuarioGanadas2Jugadores = 0
-            usuarioGanadasSolitario = ganadasPorUsuario(hojaSolitario, usuario)
-            usuarioGanadas2Jugadores = ganadasPorUsuario(hoja2Jugadores, usuario)
-          
-            plt.figure(figsize=(8, 5))
-            plt.bar(['Solitario', '2Jugadores'], [usuarioGanadasSolitario, usuarioGanadas2Jugadores])
-            plt.xlabel('Modo de Juego')
-            plt.ylabel(f'Ganadas de {usuario}')
-            plt.title(f'Cantidad de Victorias de {usuario} en Cada Modo de Juego')
-            plt.show()
+                    plt.subplot(1, 2, 2)
+                    plt.bar(labels, usuario2JugadoresData, color=['green', 'red'])
+                    plt.title('Partidas jugadas con 2 Jugadores')
+
+                    plt.suptitle(f'Cantidad de Victorias Y Perdidas de {usuario} en Cada Modo de Juego')
+                    plt.show()
         
         if opcionEstadistica == 2:
             solitarioGanadas = 0
@@ -312,8 +341,6 @@ while True:
                      dificillSolitario+= 1
                 elif nivel == "personalizado" and ganadas == 1:
                     personalizadoSolitario += 1
-                else:
-                    print('ERROR! no existe ese nivel')
 
             for row in hoja2Jugadores.iter_rows(min_row=2, values_only=True): 
                 nombre, nivel, ganadas = row
@@ -325,10 +352,8 @@ while True:
                      dificil2Jugadores += 1
                 elif nivel == "personalizado" and ganadas == 1:
                     personalizado2Jugadores += 1
-                else:
-                    print('ERROR! no existe ese nivel')
             
-            labels = ['Fácil', 'Medio', 'Difícil', 'Personaliado']
+            labels = ['Fácil', 'Medio', 'Difícil', 'Personalizado']
             nivelesSolitarioData = [facilSolitario, medioSolitario, dificillSolitario, personalizadoSolitario]
             nivel2jugadoresData = [facil2Jugadores, medio2Jugadores,dificil2Jugadores,personalizado2Jugadores]
             plt.figure(figsize=(20, 5))
@@ -346,9 +371,9 @@ while True:
 
         if opcionEstadistica == 4:
             print("Cual hoja te gustaria ver? \n 1. Datos juego solitario  \n 2. Datos partida 2 jugadores")
-            fichero= int(input())
+            fichero= validaInt()
             while fichero < 1 or fichero > 2:
-                fichero = int(input(f'Error, escribe una opción entre 1 y 2: '))
+                fichero = validaInt("Error, escribe una opción entre 1 y 2: ")
             if fichero == 1:
                 for row in hojaSolitario:
                     for cell in row:
@@ -359,9 +384,3 @@ while True:
                     for cell in row:
                         print(str(cell.value) + " ", end="")  
                     print()
-
-
-
-
-
-
